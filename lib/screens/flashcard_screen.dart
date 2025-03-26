@@ -9,7 +9,11 @@ class FlashcardScreen extends StatefulWidget {
   State<FlashcardScreen> createState() => _FlashcardScreenState();
 }
 
+enum FilterMode { all, learned, unlearned }
+
 class _FlashcardScreenState extends State<FlashcardScreen> {
+  FilterMode _filterMode = FilterMode.unlearned;
+
   List<Vocabulary> vocabularyList = [];
   int currentIndex = 0;
   bool showBack = false;
@@ -23,7 +27,17 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
   Future<void> _loadVocabulary() async {
     final list = await VocabularyStorage.loadVocabulary();
     setState(() {
-      vocabularyList = list;
+      vocabularyList = list.where((vocab) {
+        switch (_filterMode) {
+          case FilterMode.learned:
+            return vocab.isLearned;
+          case FilterMode.unlearned:
+            return !vocab.isLearned;
+          case FilterMode.all:
+          default:
+            return true;
+        }
+      }).toList();
     });
   }
 
@@ -56,10 +70,41 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Flashcards")),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: DropdownButton<FilterMode>(
+                isExpanded: true,
+                value: _filterMode,
+                items: const [
+                  DropdownMenuItem(
+                    value: FilterMode.unlearned,
+                    child: Text("📘 Chỉ từ chưa học"),
+                  ),
+                  DropdownMenuItem(
+                    value: FilterMode.learned,
+                    child: Text("✅ Chỉ từ đã học"),
+                  ),
+                  DropdownMenuItem(
+                    value: FilterMode.all,
+                    child: Text("📚 Tất cả từ"),
+                  ),
+                ],
+                onChanged: (mode) {
+                  if (mode != null) {
+                    setState(() {
+                      _filterMode = mode;
+                    });
+                    _loadVocabulary(); // Tải lại theo chế độ mới
+                  }
+                },
+              ),
+            ),
+            const SizedBox(height: 12),
             GestureDetector(
               onTap: flipCard,
               child: AnimatedContainer(
