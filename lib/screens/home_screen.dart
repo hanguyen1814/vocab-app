@@ -3,9 +3,36 @@ import '../widgets/home_tile.dart';
 import 'flashcard_screen.dart';
 import 'add_vocabulary_screen.dart';
 import 'vocabulary_list_screen.dart';
+import 'review_screen.dart';
+import 'matching_game_screen.dart';
+import 'settings_screen.dart';
+import '../models/vocabulary.dart';
+import '../vocabulary_storage.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int totalWords = 0;
+  int learnedWords = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWordStats();
+  }
+
+  Future<void> _loadWordStats() async {
+    final list = await VocabularyStorage.loadVocabulary();
+    setState(() {
+      totalWords = list.length;
+      learnedWords = list.where((v) => v.isLearned).length;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,11 +44,11 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("Hello, Linh 👋",
+              const Text("Hi 👋",
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              const Text("Bạn đã học được 120 từ",
-                  style: TextStyle(fontSize: 16, color: Colors.grey)),
+              Text("📚 Đã học: $learnedWords / $totalWords từ",
+                  style: const TextStyle(fontSize: 16, color: Colors.grey)),
               const SizedBox(height: 32),
               Expanded(
                 child: GridView.count(
@@ -38,32 +65,55 @@ class HomeScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                               builder: (_) => const FlashcardScreen()),
+                        ).then((_) => _loadWordStats());
+                      },
+                    ),
+                    HomeTile(
+                      icon: Icons.refresh,
+                      label: "Ôn tập",
+                      color: Colors.orange,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const ReviewScreen()),
                         );
                       },
                     ),
-                    const HomeTile(
-                        icon: Icons.refresh,
-                        label: "Ôn tập",
-                        color: Colors.orange),
-                    const HomeTile(
-                        icon: Icons.videogame_asset,
-                        label: "Trò chơi",
-                        color: Colors.green),
-                    const HomeTile(
-                        icon: Icons.settings,
-                        label: "Cài đặt",
-                        color: Colors.grey),
+                    HomeTile(
+                      icon: Icons.videogame_asset,
+                      label: "Trò chơi",
+                      color: Colors.green,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const MatchingGameScreen()),
+                        );
+                      },
+                    ),
+                    HomeTile(
+                      icon: Icons.settings,
+                      label: "Cài đặt",
+                      color: Colors.grey,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const SettingsScreen()),
+                        ).then((_) => _loadWordStats());
+                      },
+                    ),
                     HomeTile(
                       icon: Icons.add,
                       label: "Thêm từ",
                       color: Colors.purple,
                       onTap: () {
-                        // print("Đã nhấn Thêm từ");
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (_) => const AddVocabularyScreen()),
-                        );
+                        ).then((_) => _loadWordStats());
                       },
                     ),
                     HomeTile(
@@ -75,7 +125,7 @@ class HomeScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                               builder: (_) => const VocabularyListScreen()),
-                        );
+                        ).then((_) => _loadWordStats());
                       },
                     ),
                   ],

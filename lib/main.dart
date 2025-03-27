@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
 import 'screens/add_vocabulary_screen.dart';
+import 'sample_words.dart';
+import 'vocabulary_storage.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final current = await VocabularyStorage.loadVocabulary();
+  if (current.isEmpty) {
+    await VocabularyStorage.saveVocabulary(sampleWords);
+  }
+
   runApp(const VocaBoostApp());
 }
 

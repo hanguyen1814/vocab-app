@@ -41,6 +41,22 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
     });
   }
 
+  Future<void> _toggleLearned() async {
+    final fullList = await VocabularyStorage.loadVocabulary();
+    final target = vocabularyList[currentIndex];
+
+    final index = fullList.indexWhere((v) => v.word == target.word);
+    if (index != -1) {
+      fullList[index].isLearned = !fullList[index].isLearned;
+      await VocabularyStorage.saveVocabulary(fullList);
+      await _loadVocabulary();
+      setState(() {
+        currentIndex = 0;
+        showBack = false;
+      });
+    }
+  }
+
   void nextCard() {
     setState(() {
       showBack = false;
@@ -99,7 +115,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                     setState(() {
                       _filterMode = mode;
                     });
-                    _loadVocabulary(); // Tải lại theo chế độ mới
+                    _loadVocabulary();
                   }
                 },
               ),
@@ -138,6 +154,18 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
               ),
             ),
             const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: _toggleLearned,
+              icon: Icon(card.isLearned ? Icons.undo : Icons.check),
+              label: Text(
+                  card.isLearned ? 'Bỏ đánh dấu đã học' : 'Đánh dấu đã học'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: card.isLearned ? Colors.grey : Colors.green,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+            ),
+            const SizedBox(height: 12),
             ElevatedButton(
               onPressed: nextCard,
               child: const Text('Tiếp theo'),

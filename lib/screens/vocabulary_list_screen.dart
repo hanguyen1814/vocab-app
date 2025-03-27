@@ -111,43 +111,50 @@ class _VocabularyListScreenState extends State<VocabularyListScreen> {
           Expanded(
             child: filteredList.isEmpty
                 ? const Center(child: Text("Không tìm thấy kết quả"))
-                : ListView.builder(
+                : ListView.separated(
                     itemCount: filteredList.length,
+                    separatorBuilder: (context, index) =>
+                        const Divider(height: 1),
                     itemBuilder: (context, index) {
                       final vocab = filteredList[index];
                       final realIndex = vocabularyList.indexOf(vocab);
-                      return ListTile(
-                        title: Text(vocab.word),
-                        subtitle: Text(vocab.meaning),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(
-                                vocab.isLearned
-                                    ? Icons.check_circle
-                                    : Icons.hourglass_bottom,
-                                color: vocab.isLearned
-                                    ? Colors.green
-                                    : Colors.grey,
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        child: ListTile(
+                          title: Text(vocab.word),
+                          subtitle: Text(vocab.meaning),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  vocab.isLearned
+                                      ? Icons.check_circle
+                                      : Icons.hourglass_bottom,
+                                  color: vocab.isLearned
+                                      ? Colors.green
+                                      : Colors.grey,
+                                ),
+                                onPressed: () async {
+                                  setState(() {
+                                    vocab.isLearned = !vocab.isLearned;
+                                  });
+                                  await VocabularyStorage.saveVocabulary(
+                                      vocabularyList);
+                                },
                               ),
-                              onPressed: () async {
-                                setState(() {
-                                  vocab.isLearned = !vocab.isLearned;
-                                });
-                                await VocabularyStorage.saveVocabulary(
-                                    vocabularyList);
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () => _editVocabulary(realIndex),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => _deleteVocabulary(realIndex),
-                            ),
-                          ],
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () => _editVocabulary(realIndex),
+                              ),
+                              IconButton(
+                                icon:
+                                    const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _deleteVocabulary(realIndex),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },

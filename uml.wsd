@@ -1,0 +1,11 @@
+@startuml
+[*] --> Pending
+
+Pending --> Confirmed : Admin xác nhận
+Confirmed --> Shipping : Giao hàng
+Shipping --> Delivered : Đã giao
+Pending --> Cancelled : Hủy bởi người dùng
+Confirmed --> Cancelled : Hủy bởi admin
+Delivered --> [*]
+Cancelled --> [*]
+@enduml
